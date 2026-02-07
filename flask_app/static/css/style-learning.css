@@ -1,0 +1,287 @@
+body {
+    border: 0 solid #E5E7EB;
+    background: #F9FAFB;
+    text-align: center;
+}
+
+
+/* Header */
+.header1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 468px;
+    box-shadow: 0 2px 5px #0000001A;
+}
+
+/* header: Logo + Name */
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-box {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #1E88E5 0%, #64B5F6 70.71%);
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    font-size: 20px;
+}
+
+.app-name {
+    color: #111827;
+    font-family: Tahoma;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* header: Center Navigation */
+.nav-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.nav-buttons a {
+    width: 86px;
+    height: 60px;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    color: #4B5563;
+    background: transparent;
+    text-decoration: none;
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    cursor: pointer;
+    box-sizing: border-box;   /* include border in button height */
+    border-bottom: 0px solid transparent;
+}
+
+.nav-buttons a.active {
+    color: #1E88E5;
+    border-bottom: 2px solid #1E88E5;
+}
+
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.welcome-text {
+    margin-left: 15px;
+    font-weight: 400;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    color: #111827;
+}
+
+
+/* header: Logout Button */
+.logout-btn {
+    background-color: #1E88E5;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.logout-btn:hover {
+    background-color: #3070a5;
+}
+
+
+/* Typography */
+h1 {
+    color: #111827;
+    font-family: 'Tahoma';
+    font-size: 56px;
+    font-style: normal;
+    font-weight: 700;
+    margin-bottom: 25px;
+
+}
+
+h2 {
+    color: #111827;
+    font-family: Tahoma;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+h3 {
+    color: #6B7280;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+}
+
+h4 {
+    color: #111827;
+    font-family: "Tahoma";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+h6 {
+    color: #4B5563;
+    font-family: Tahoma;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+.b1 {
+    color: #4B5563;
+    font-size: 18px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 28px;
+}
+
+.b2 {
+    color: #6B7280;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.b3 {
+    color: #6B7280;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+
+}
+
+
+/* Content Section */
+.article {
+    margin-top: 150px;
+    margin-bottom: 60px;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.learn-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 40px;
+    column-gap: 50px;
+    margin-top: 30px;
+}
+
+.learn-card {
+    width: 330px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 0 0 20px 0;
+    box-shadow: 0 2px 8px #0000001A;
+}
+
+.learn-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+}
+
+.learn-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    height: 220px;
+    text-align: left;
+}
+
+.tag {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    margin: 15px;
+    border-radius: 16px;
+}
+
+.tag.blue {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.tag.green {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.tag.purple {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+.learn-card h5 {
+    color: #111827;
+    margin: 0 15px 10px;
+    font-family: Tahoma;
+    font-weight: 700;
+    font-size: 20px;
+    text-align: left;
+}
+
+.learn-card p {
+    color: #4B5563;
+    margin: 15px 15px 0 15px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    text-align: left;
+}
+
+.learn-link {
+    display: inline-flex; 
+    align-items: center;
+    margin: 0 15px 0 15px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: #1e88e5;
+    text-decoration: none;
+}
+
+.learn-link i {
+    margin-left: 6px;
+}
+

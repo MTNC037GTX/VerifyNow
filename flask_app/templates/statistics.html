@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Statistics</title>
+    <link rel="stylesheet" href="../static/css/style-statistics.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+        
+        <nav class="nav-buttons">
+            <a href="/verification">Verification</a>
+            <a href="/learning">Learning</a>
+            <a href="/directory">Directory</a>
+            <a href="/statistics" class="active">Statistics</a>
+        </nav>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="statistics">
+        <div>
+            <h2>Statistic Dashboard</h2>
+            <p class="b1">Explore the latest statistics and trends in online misinformation and phishing <br>attempts from our database.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-container">
+
+            <!-- Total Verifications -->
+            <div class="kpi-card" title="Total number of verifications conducted so far.">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Total Verifications Done by Admin</p>
+                        <h3 class="kpi-value">{{ total_verifications }}</h3>
+                    </div>
+                    <div class="kpi-icon icon-blue">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="kpi-progress">
+                    <div class="kpi-progress-bar kpi-blue" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Suspicious Content Detected -->
+            <div class="kpi-card" title="Number of verifications flagged as suspicious or fake content.">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Suspicious Content Detected</p>
+                        <h3 class="kpi-value">{{ suspicious_count }}</h3>
+                    </div>
+                    <div class="kpi-icon icon-red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="kpi-progress">
+                    <div class="kpi-progress-bar kpi-red" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Websites Added to Directory -->
+            <div class="kpi-card" title="Click to view all websites added to the fake directory." onclick="window.location.href='/directory'" style="cursor:pointer;">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Websites Added to Directory</p>
+                        <h3 class="kpi-value">{{ directory_count }}</h3>
+                    </div>
+                    <div class="kpi-icon icon-green">
+                        <i class="fas fa-database"></i>
+                    </div>
+                </div>
+                <div class="kpi-progress">
+                    <div class="kpi-progress-bar kpi-green" style="width: 100%;"></div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Charts Section -->
+        <div class="chart-grid">
+            <!-- Source Reliability Rating -->
+            <div class="card" title="Shows reliability scores of sources. Higher score means more trusted.">
+                <h3>Source Reliability Rating</h3>
+                <div class="bar-chart">
+                    <canvas id="sourceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Risk Level Distribution -->
+            <div class="card" title="Shows distribution of risk levels in the fake web directory.">
+                <h3>Risk Level Distribution in Directory</h3>
+                <div class="pie-chart">
+                    <canvas id="riskPie"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!--Top Leaderboard-->
+        <div class="leaderboard">
+            <h3>Top Reported Domain</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Domain</th>
+                        <th>Reports</th>
+                        <th>Risk Level</th>
+                        <th>Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for top in top_reported %}
+                    <tr class="leaderboard-row" data-id="{{ top.top_domain_id }}">
+                        <td>
+                            {% if top.rank_badge %}
+                                <span class="rank-badge {{ top.rank_badge }}">{{ top.rank }}</span>
+                            {% else %}
+                                {{ top.rank }}
+                            {% endif %}
+                        </td>
+                        <td>{{ top.top_name }}</td>
+                        <td>{{ top.report_count }}</td>
+                        <td>
+                            <span class="status {{ top.risk_class }}">
+                                {{ top.risk_level }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="tag {{ top.category_tag }}">
+                                {{ top.category }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No domain found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+    
+
+    <script>
+        const sourceLabels = {{ source_labels | tojson }};
+        const sourceScores = {{ source_scores | tojson }};
+
+        const riskLow = {{ risk_low }};
+        const riskMedium = {{ risk_medium }};
+        const riskHigh = {{ risk_high }};
+    </script>
+
+    <!-- Chart Scripts -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // Source Reliability Chart
+        const sourceLabels = {{ source_labels | tojson }};
+        const sourceScores = {{ source_scores | tojson }};
+
+        // Color coding: >=80 green, 50-79 yellow, <50 red
+        const sourceColors = sourceScores.map(score => {
+            if(score >= 80) return "#4CAF50";   // high
+            else if(score >= 50) return "#FFC107"; // medium
+            else return "#F44336";              // low
+        });
+
+        new Chart(document.getElementById("sourceChart"), {
+            type: "bar",
+            data: {
+                labels: sourceLabels,
+                datasets: [{
+                    label: "Reliability Score",
+                    data: sourceScores,
+                    backgroundColor: sourceColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                scales: {
+                    x: {
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: "Reliability (%)"
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.x}%`;
+                            }
+                        }
+                    },
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Risk Level Distribution Chart
+        const riskLow = {{ risk_low }};
+        const riskMedium = {{ risk_medium }};
+        const riskHigh = {{ risk_high }};
+
+        new Chart(document.getElementById("riskPie"), {
+            type: "pie",
+            data: {
+                labels: ["Low", "Medium", "High"],
+                datasets: [{
+                    data: [riskLow, riskMedium, riskHigh],
+                    backgroundColor: [
+                        "#4CAF50",   // Low
+                        "#FFC107",   // Medium
+                        "#F44336"    // High
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom" },
+                    datalabels: {
+                        color: "#ffffff",
+                        font: { weight: "bold", size: 16 },
+                        formatter: (value, context) => {
+                            const total = context.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+                            const percent = total ? (value / total * 100).toFixed(1) : 0;
+                            return percent + "%";
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+    });
+    </script>
+
+</body>
+</html>

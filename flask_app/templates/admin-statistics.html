@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Statistics Management</title>
+    <link rel="stylesheet" href="../static/css/style-admin-statistics.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+    <!-- Side navigation -->
+    <aside class="sidebar">
+
+        <a href="/admin-verification">
+            <i class="fa-solid fa-shield-alt"></i>
+            Verifications
+        </a>
+
+        <a href="/admin-learning">
+            <i class="fa-solid fa-book"></i>
+            Learning Content
+        </a>
+
+        <a href="/admin-directory">
+            <i class="fa-solid fa-globe"></i>
+            Fake Web Directory
+        </a>
+
+        <a href="/admin-statistics" class="active">
+            <i class="fa-solid fa-chart-bar"></i>
+            Statistics Management
+        </a>
+    </aside>
+
+    
+    <!-- Main Content -->
+    <section class="statistics">
+        <div class="title">
+            <h3>Statistic Management</h3>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-container">
+
+            <!-- Total Verifications -->
+            <div class="kpi-card" title="Total number of verifications conducted so far.">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Total Verifications Done by Admin</p>
+                        <h3 class="kpi-value">{{ total_verifications }}</h3>
+                    </div>
+                    <div class="kpi-icon icon-blue">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="kpi-progress">
+                    <div class="kpi-progress-bar kpi-blue" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Suspicious Content Detected -->
+            <div class="kpi-card" title="Number of verifications flagged as suspicious or fake content.">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Suspicious Content Detected</p>
+                        <h3 class="kpi-value">{{ suspicious_count }}</h3>
+                    </div>
+                    <div class="kpi-icon icon-red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="kpi-progress">
+                    <div class="kpi-progress-bar kpi-red" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Websites Added to Directory -->
+            <div class="kpi-card" title="Click to view all websites added to the fake directory." onclick="window.location.href='/directory'" style="cursor:pointer;">
+                <div class="kpi-header">
+                    <div>
+                        <p class="kpi-label">Websites Added to Directory</p>
+                        <h3 class="kpi-value">{{ directory_count }}</h3>
+                    </div>
+                    <div class="kpi-icon icon-green">
+                        <i class="fas fa-database"></i>
+                    </div>
+                </div>
+                <div class="kpi-progress">
+                    <div class="kpi-progress-bar kpi-green" style="width: 100%;"></div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Charts Section -->
+        <div class="chart-grid">
+            <!-- Source Reliability Rating -->
+            <div class="card" title="Shows reliability scores of sources. Higher score means more trusted.">
+                <h3>Source Reliability Rating</h3>
+                <div class="bar-chart">
+                    <canvas id="sourceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Risk Level Distribution -->
+            <div class="card" title="Shows distribution of risk levels in the fake web directory.">
+                <h3>Risk Level Distribution in Directory</h3>
+                <div class="pie-chart">
+                    <canvas id="riskPie"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <!--Admin edit stats-->
+    <section class="edit-stats-form">
+        <h3 class="section-title">Manage Statistics</h3>
+
+        <form method="POST" action="{{ url_for('statistics.update_admin_statistics') }}">
+            <!-- Source Reliability -->
+            <div class="stats-block">
+                <div class="header">
+                    <h4 class="block-title">Source Reliability Rating</h4>
+
+                    <button type="button" id="add-source-btn" class="add-btn">
+                        <i class="fa-solid fa-plus"></i>Add New
+                    </button>
+                </div>
+
+                <div id="source-container">
+                    {% if source_reliability|length > 0 %}
+                        {% for row in source_reliability %}
+                        <div class="form-row row-item">
+                            <div class="form-group">
+                                <label>Source Name</label>
+                                <input type="text" name="source_name[]" value="{{ row.source }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Reliability Score (0-100)</label>
+                                <input type="number" name="reliability_score[]" min="0" max="100" value="{{ row.reliability }}" required>
+                            </div>
+                            <button type="button" class="delete-btn">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="form-row row-item">
+                        <div class="form-group">
+                            <label>Source Name</label>
+                            <input type="text" name="source_name[]" placeholder="Enter source name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Reliability Score (0-100)</label>
+                            <input type="number" name="reliability_score[]" min="0" max="100" placeholder="0-100" required>
+                        </div>
+                        <button type="button" class="delete-btn">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Top Reported Domains -->
+            <div class="stats-block">
+                <div class="header">
+                    <h4 class="block-title">Top Reported Domains</h4>
+
+                    <button type="button" id="add-domain-btn" class="add-btn">
+                        <i class="fa-solid fa-plus"></i>Add New
+                    </button>
+                </div>
+
+                <div id="domain-container">
+                    {% if top_reported|length > 0 %}
+                        {% for row in top_reported %}
+                        <div class="form-row row-item">
+                            <div class="form-group">
+                                <label>Domain Name</label>
+                                <input type="text" name="top_name[]" value="{{ row.top_name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Report Count</label>
+                                <input type="number" name="report_count[]" min="0" value="{{ row.report_count }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select name="category[]" required>
+                                    <option value="Scam" {% if row.category=='Scam' %}selected{% endif %}>Scam & Phishing</option>
+                                    <option value="News" {% if row.category=='News' %}selected{% endif %}>News & Media</option>
+                                    <option value="Gambling" {% if row.category=='Gambling' %}selected{% endif %}>Gambling</option>
+                                    <option value="Ecommerce" {% if row.category=='Ecommerce' %}selected{% endif %}>E-commerce</option>
+                                    <option value="Social" {% if row.category=='Social' %}selected{% endif %}>Social Media</option>
+                                    <option value="Government" {% if row.category=='Government' %}selected{% endif %}>Government Imitator</option>
+                                    <option value="Malware" {% if row.category=='Malware' %}selected{% endif %}>Malware</option>
+                                    <option value="Others" {% if row.category=='Others' %}selected{% endif %}>Others</option>
+                                </select>
+                            </div>
+                            <button type="button" class="delete-btn">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="form-row row-item">
+                        <div class="form-group">
+                            <label>Domain Name</label>
+                            <input type="text" name="top_name[]" placeholder="Enter domain name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Report Count</label>
+                            <input type="number" name="report_count[]" min="0" placeholder="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select name="category[]" required>
+                                <option value="" disabled selected>Select a category</option>
+                                <option value="Scam">Scam & Phishing</option>
+                                <option value="News">News & Media</option>
+                                <option value="Gambling">Gambling</option>
+                                <option value="Ecommerce">E-commerce</option>
+                                <option value="Social">Social Media</option>
+                                <option value="Government">Government Imitator</option>
+                                <option value="Malware">Malware</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <button type="button" class="delete-btn">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="save-btn" type="submit">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+
+    </section>
+
+
+    <script>
+        const sourceLabels = {{ source_labels | tojson }};
+        const sourceScores = {{ source_scores | tojson }};
+
+        const riskLow = {{ risk_low }};
+        const riskMedium = {{ risk_medium }};
+        const riskHigh = {{ risk_high }};
+    </script>
+
+    <!-- Chart Scripts -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // Source Reliability Chart
+        const sourceLabels = {{ source_labels | tojson }};
+        const sourceScores = {{ source_scores | tojson }};
+
+        // Color coding: >=80 green, 50-79 yellow, <50 red
+        const sourceColors = sourceScores.map(score => {
+            if(score >= 80) return "#4CAF50";   // high
+            else if(score >= 50) return "#FFC107"; // medium
+            else return "#F44336";              // low
+        });
+
+        new Chart(document.getElementById("sourceChart"), {
+            type: "bar",
+            data: {
+                labels: sourceLabels,
+                datasets: [{
+                    label: "Reliability Score",
+                    data: sourceScores,
+                    backgroundColor: sourceColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                scales: {
+                    x: {
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: "Reliability (%)"
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.x}%`;
+                            }
+                        }
+                    },
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Risk Level Distribution Chart
+        const riskLow = {{ risk_low }};
+        const riskMedium = {{ risk_medium }};
+        const riskHigh = {{ risk_high }};
+
+        new Chart(document.getElementById("riskPie"), {
+            type: "pie",
+            data: {
+                labels: ["Low", "Medium", "High"],
+                datasets: [{
+                    data: [riskLow, riskMedium, riskHigh],
+                    backgroundColor: [
+                        "#4CAF50",   // Low
+                        "#FFC107",   // Medium
+                        "#F44336"    // High
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom" },
+                    datalabels: {
+                        color: "#ffffff",
+                        font: { weight: "bold", size: 16 },
+                        formatter: (value, context) => {
+                            const total = context.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+                            const percent = total ? (value / total * 100).toFixed(1) : 0;
+                            return percent + "%";
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+    });
+    </script>
+
+    <!--Script for add new-->
+    <script>
+        function addRow(containerId, html) {
+            const container = document.getElementById(containerId);
+            const newRow = document.createElement("div");
+            newRow.className = "form-row row-item";
+            newRow.innerHTML = html;
+            container.appendChild(newRow);
+        }
+
+        // Add Source Row
+        document.getElementById("add-source-btn").addEventListener("click", function () {
+            addRow("source-container", `
+                <div class="form-group">
+                    <label>Source Name</label>
+                    <input type="text" name="source_name[]" required>
+                </div>
+                <div class="form-group">
+                    <label>Reliability Score (0-100)</label>
+                    <input type="number" name="reliability_score[]" min="0" max="100" required>
+                </div>
+                <button type="button" class="delete-btn">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `);
+        });
+
+        // Add Domain Row
+        document.getElementById("add-domain-btn").addEventListener("click", function () {
+            addRow("domain-container", `
+                <div class="form-group">
+                    <label>Domain Name</label>
+                    <input type="text" name="top_name[]" required>
+                </div>
+                <div class="form-group">
+                    <label>Report Count</label>
+                    <input type="number" name="report_count[]" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category[]" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Scam">Scam & Phishing</option>
+                        <option value="News">News & Media</option>
+                        <option value="Gambling">Gambling</option>
+                        <option value="Ecommerce">E-commerce</option>
+                        <option value="Social">Social Media</option>
+                        <option value="Government">Government Imitator</option>
+                        <option value="Malware">Malware</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <button type="button" class="delete-btn">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `);
+        });
+
+        // Delete Row (event delegation)
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".delete-btn");
+            if (btn) {
+                btn.closest(".row-item").remove();
+            }
+        });
+    </script>
+
+
+
+</body>
+</html>

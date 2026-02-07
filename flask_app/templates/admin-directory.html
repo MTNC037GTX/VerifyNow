@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Learning Management</title>
+    <link rel="stylesheet" href="../static/css/style-admin-directory.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+    <!-- Side navigation -->
+    <aside class="sidebar">
+
+        <a href="/admin-verification">
+            <i class="fa-solid fa-shield-alt"></i>
+            Verifications
+        </a>
+
+        <a href="/admin-learning">
+            <i class="fa-solid fa-book"></i>
+            Learning Content
+        </a>
+
+        <a href="/admin-directory" class="active">
+            <i class="fa-solid fa-globe"></i>
+            Fake Web Directory
+        </a>
+
+        <a href="/admin-statistics">
+            <i class="fa-solid fa-chart-bar"></i>
+            Statistics Management
+        </a>
+    </aside>
+
+    <!-- Main content -->
+    <section class="directory-management">
+        <div class="title">
+            <h3>Fake Web Directory Management</h3>
+        </div>
+
+        <div class="add-website-form">
+            <div>
+                <h4>Add New Website</h4>
+            </div>
+
+            <form action="{{ url_for('directory.add_directory') }}" method="POST">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Website URL</label>
+                        <input type="text" id="website-url" name="site_domain" placeholder="Website URL" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="category" name="category" required>
+                            <option value="" disabled selected>Select a category</option>
+                            <option value="Scam">Scam & Phishing</option>
+                            <option value="News">News & Media</option>
+                            <option value="Gambling">Gambling</option>
+                            <option value="Ecommerce">E-commerce</option>
+                            <option value="Social">Social Media</option>
+                            <option value="Government">Government Imitator</option>
+                            <option value="Malware">Malware</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Risk Level</label>
+                        <select id="risk-level" name="risk_level" required>
+                            <option value="" disabled selected>Select a risk level</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Reason for Listing</label>
+                        <input type="text" id="reason" name="reason" placeholder="Explain why this website is classified as fake or suspicious" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="add-btn">
+                    <i class="fa-solid fa-plus"></i> Add New
+                </button>
+            </form>
+        </div>
+
+
+        <div class="directory-list">
+            <div class="information-bar">
+                Showing {{ (page-1)*10 + 1 }} - {{ (page-1)*10 + directory_list|length }} of {{ total_items }} directories
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Website</th>
+                        <th>Category</th>
+                        <th>Risk Level</th>
+                        <th>Reported Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for directory in directory_list %}
+                    <!-- Main directory row -->
+                    <tr class="directory-row" data-id="{{ directory.directory_id }}">
+                        <td>
+                            <div class="website">
+                                <div class="logo-circle">
+                                    <i class="fas {{ category_icons.get(directory.category, 'fa-circle-question') }}"></i>
+                                </div>
+                                {{ directory.site_domain }}
+                            </div>
+                        </td>
+                        <td>{{ directory.category }}</td>
+                        <td>
+                            <span class="status {{ directory.risk_class }}">
+                                {{ directory.risk_level }}
+                            </span>
+                        </td>
+                        <td>{{ directory.date_reported }}</td>
+                        <td>
+                            <div class="action_column">
+                                <form action="{{ url_for('directory.delete_directory', directory_id=directory.directory_id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this entry?');">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+
+                                <form action="{{ url_for('directory.toggle_directory_visibility', directory_id=directory.directory_id) }}" method="POST">
+                                    {% if directory.is_hidden == 1 %}
+                                        <button type="submit" class="unhide-btn" title="Unhide">
+                                            <i class="fa-solid fa-eye-slash"></i>
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="hide-btn" title="Hide">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Accordion row -->
+                    <tr class="accordion-row" id="accordion-{{ directory.directory_id }}" style="display:none;">
+                        <td colspan="5" class="accordion-content">
+                            <strong>Reason:</strong> {{ directory.reason }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No directory found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+            <div class="pagination">
+                <div class="page-info">Showing page {{ page }} of {{ total_pages }}</div>
+
+                <div class="page-buttons">
+                    <a class="page-btn" href="{{ url_for('directory.admin_directory', page=page-1) }}" {% if page == 1 %}style="pointer-events:none; opacity:0.5"{% endif %}>&lt;</a>
+
+                    {% set start = page - 1 if page > 1 else 1 %}
+                    {% set end = start + 2 %}
+                    {% if end > total_pages %}
+                        {% set end = total_pages %}
+                        {% set start = end - 2 if end - 2 > 0 else 1 %}
+                    {% endif %}
+
+                    {% for p in range(start, end + 1) %}
+                        <a class="page-btn {% if p == page %}active{% endif %}" href="{{ url_for('directory.admin_directory', page=p) }}">{{ p }}</a>
+                    {% endfor %}
+
+                    <a class="page-btn" href="{{ url_for('directory.admin_directory', page=page+1) }}" {% if page == total_pages %}style="pointer-events:none; opacity:0.5"{% endif %}>&gt;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Accordion script -->
+    <script>
+    document.querySelectorAll('.directory-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const id = row.getAttribute('data-id');
+            const accordion = document.getElementById('accordion-' + id);
+            if (accordion.style.display === 'table-row') {
+                accordion.style.display = 'none';
+            } else {
+                accordion.style.display = 'table-row';
+            }
+        });
+    });
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,170 @@
+body {
+    border: 0 solid #E5E7EB;
+    background: #F9FAFB;
+    text-align: center;
+}
+
+
+/* Header */
+.header1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 468px;
+    box-shadow: 0 2px 5px #0000001A;
+}
+
+/* header: Logo + Name */
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-box {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #1E88E5 0%, #64B5F6 70.71%);
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    font-size: 20px;
+}
+
+.app-name {
+    color: #111827;
+    font-family: Tahoma;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* header: Center Navigation */
+.nav-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.nav-buttons a {
+    width: 86px;
+    height: 60px;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    color: #4B5563;
+    background: transparent;
+    text-decoration: none;
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    cursor: pointer;
+    box-sizing: border-box;   /* include border in button height */
+    border-bottom: 0px solid transparent;
+}
+
+.nav-buttons a.active {
+    color: #1E88E5;
+    border-bottom: 2px solid #1E88E5;
+}
+
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.welcome-text {
+    margin-left: 15px;
+    font-weight: 400;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    color: #111827;
+}
+
+
+/* header: Logout Button */
+.logout-btn {
+    background-color: #1E88E5;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.logout-btn:hover {
+    background-color: #3070a5;
+}
+
+
+/* Content Sections */
+.article-page {
+    width: 900px;
+    margin: 150px auto 50px auto; /* center content */
+    font-family: Arial, sans-serif;
+}
+
+.article-header {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.back-button {
+    text-align: left;
+    padding: 8px;
+    color: #1e88e5;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.article-title {
+    font-size: 48px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 750;
+    color: #111827;
+    text-align: justify;
+}
+
+.article-subtitle {
+    font-size: 24px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    color: #111827;
+    text-align: justify;
+    margin-bottom: 30px;
+}
+
+.article-body {
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    color: #374151;
+    text-align: justify;
+    line-height: 26px;
+}
+
+

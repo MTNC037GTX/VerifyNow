@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Learning Management</title>
+    <link rel="stylesheet" href="../static/css/style-admin-learning.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+
+    <!-- Script for rich text editor -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+    <!-- Side navigation -->
+    <aside class="sidebar">
+
+        <a href="/admin-verification">
+            <i class="fa-solid fa-shield-alt"></i>
+            Verifications
+        </a>
+
+        <a href="/admin-learning" class="active">
+            <i class="fa-solid fa-book"></i>
+            Learning Content
+        </a>
+
+        <a href="/admin-directory">
+            <i class="fa-solid fa-globe"></i>
+            Fake Web Directory
+        </a>
+
+        <a href="/admin-statistics">
+            <i class="fa-solid fa-chart-bar"></i>
+            Statistics Management
+        </a>
+    </aside>
+
+    <!-- Main content -->
+    <section class="content-management">
+        <div class="title">
+            <h3>Learning Content Management</h3>
+            <a href="#addnew-popup" class="add-btn"><i class="fa-solid fa-plus"></i> Add New</a>
+        </div>
+
+        <div class="directory-list">
+            <div class="information-bar">
+                Showing {{ (page-1)*10 + 1 }} - {{ (page-1)*10 + article_list|length }} of {{ total_items }} articles
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Date Added</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in article_list %}
+                    <tr>
+                        <td>
+                            <div class="article-title">
+                                {{ article.title }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="tag {{ article.category_tag }}">
+                                {{ article.category }}
+                            </span>
+                        </td>
+                        <td>
+                            {{ article.publish_date }}
+                        </td>
+                        <td>{{ article.publish_date }}</td>
+                        <td>
+                            <div class="action_column">
+                                <button class="edit-btn" title="Edit"
+                                    data-id="{{ article.article_id }}"
+                                    data-title="{{ article.title|e }}"
+                                    data-description="{{ article.description|e }}"
+                                    data-category="{{ article.category|e }}"
+                                    data-content="{{ article.content|e }}"
+                                    data-image="{{ article.thumbnail_image|e }}">
+                                    
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                                <form action="{{ url_for('learning.toggle_article_visibility', article_id=article.article_id) }}" method="POST">
+                                    {% if article.is_hidden == 1 %}
+                                        <button type="submit" class="unhide-btn" title="Unhide">
+                                            <i class="fa-solid fa-eye-slash"></i>
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="hide-btn" title="Hide">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No article found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <div class="page-info">Showing page {{ page }} of {{ total_pages }}</div>
+
+                <div class="page-buttons">
+                    <a class="page-btn" href="{{ url_for('learning.admin_learning', page=page-1) }}" {% if page == 1 %}style="pointer-events:none; opacity:0.5"{% endif %}>&lt;</a>
+
+                    {% set start = page - 1 if page > 1 else 1 %}
+                    {% set end = start + 2 %}
+                    {% if end > total_pages %}
+                        {% set end = total_pages %}
+                        {% set start = end - 2 if end - 2 > 0 else 1 %}
+                    {% endif %}
+
+                    {% for p in range(start, end + 1) %}
+                        <a class="page-btn {% if p == page %}active{% endif %}" href="{{ url_for('learning.admin_learning', page=p) }}">{{ p }}</a>
+                    {% endfor %}
+
+                    <a class="page-btn" href="{{ url_for('learning.admin_learning', page=page+1) }}" {% if page == total_pages %}style="pointer-events:none; opacity:0.5"{% endif %}>&gt;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Popup -->
+    <div id="addnew-popup" class="popup-overlay">
+        <div class="popup-box">
+
+            <!-- Header -->
+            <div class="popup-header">
+                <h5>Review Submission</h5>
+                <a href="/admin-learning" class="popup-close-btn">&times;</a>
+            </div>
+
+            
+            <form id="review-form" action="{{ url_for('learning.add_article') }}" method="POST" enctype="multipart/form-data">
+                <div class="popup-body">
+
+                    <label>Title</label>
+                    <input name="title" type="text" class="popup-input" placeholder="Enter article title" maxlength="50" required>
+
+                    <label>Description</label>
+                    <input name="description" type="text" class="popup-input" placeholder="Enter article description" maxlength="120" required>
+
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="popup-input" placeholder="Select a category" required>
+                        <option value="Beginner Guide">Beginner Guide</option>
+                        <option value="Cybersecurity">Cybersecurity</option>
+                        <option value="Infographic">Infographic</option>
+                    </select>
+
+                    <label>Content</label>
+                    <textarea id="content" name="content"></textarea>
+
+                    <label>Thumbnail Image</label>
+                    <input type="file"
+                        name="thumbnail_image"
+                        accept="image/*"
+                        class="popup-input"
+                        required>
+
+                    
+                </div>
+
+                <!-- Footer buttons -->
+                <div class="popup-footer">
+                    <a href="/admin-learning" class="btn-cancel">Cancel</a>
+                    <button type="submit" class="btn-confirm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!--Edit popup-->
+    <div id="edit-popup" class="popup-overlay" style="display: none;">
+        <div class="popup-box review-box">
+
+            <!-- Header -->
+            <div class="popup-header">
+                <h5>Edit Article</h5>
+                <a href="#" class="popup-close-btn" onclick="closeEditPopup()">&times;</a>
+            </div>
+
+            <form id="edit-form"action="{{ url_for('learning.update_article') }}" method="POST" enctype="multipart/form-data">
+
+                <!-- Hidden article ID -->
+                <input type="hidden" name="article_id" id="edit-article-id">
+
+                <div class="popup-body">
+
+                    <label>Title</label>
+                    <input name="title" id="edit-title" type="text" class="popup-input" maxlength="50" required>
+
+                    <label>Description</label>
+                    <input name="description" id="edit-description" type="text" class="popup-input" maxlength="120" required>
+
+                    <label for="edit-category">Category</label>
+                    <select id="edit-category" name="category" class="popup-input" required>
+                        <option value="Beginner Guide">Beginner Guide</option>
+                        <option value="Cybersecurity">Cybersecurity</option>
+                        <option value="Infographic">Infographic</option>
+                    </select>
+
+                    <label>Content</label>
+                    <textarea id="edit-content" name="content"></textarea>
+
+                    <label>Current Thumbnail</label>
+                    <div class="current-thumb-box">
+                        <img id="edit-thumb-preview" src="" alt="thumbnail" class="current-thumb-preview">
+                    </div>
+
+
+                    <label>Upload New Thumbnail</label>
+                    <input type="file" name="thumbnail_image" accept="image/*" class="popup-input">
+
+                </div>
+
+                <!-- Footer -->
+                <div class="popup-footer">
+                    <a href="#" class="btn-cancel" onclick="closeEditPopup()">Cancel</a>
+                    <button type="submit" class="btn-confirm">Update Article</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+    ClassicEditor
+        .create(document.querySelector('#content'))
+        .catch(error => {
+            console.error(error);
+        });
+    </script>
+
+
+    <!-- Script for edit article-->
+    <script>
+    let editEditor;
+
+    // CKEditor instance for edit
+    ClassicEditor
+        .create(document.querySelector('#edit-content'), {
+            height: '200px'
+        })
+        .then(editor => { editEditor = editor; })
+        .catch(error => { console.error(error); });
+
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('edit-article-id').value = btn.dataset.id;
+            document.getElementById('edit-title').value = btn.dataset.title;
+            document.getElementById('edit-description').value = btn.dataset.description;
+            document.getElementById('edit-category').value = btn.dataset.category;
+
+            // CKEditor content
+            if (editEditor) {
+                editEditor.setData(btn.dataset.content);
+            }
+
+            // Thumbnail
+            const img = document.getElementById('edit-thumb-preview');
+            img.src = "/static/uploads/" + btn.dataset.image;
+
+            // Show popup
+            document.getElementById('edit-popup').style.display = "flex";
+        });
+    });
+
+    function closeEditPopup() {
+        document.getElementById('edit-popup').style.display = "none";
+    }
+    </script>
+
+
+</body>
+</html>

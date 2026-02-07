@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fake Web Directory</title>
+    <link rel="stylesheet" href="../static/css/style-directory.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+        
+        <nav class="nav-buttons">
+            <a href="/verification">Verification</a>
+            <a href="/learning">Learning</a>
+            <a href="/directory" class="active">Directory</a>
+            <a href="/statistics">Statistics</a>
+        </nav>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="directory">
+        <div>
+            <h2>Fake Website Directory</h2>
+            <p class="b1">Browse our curated list of know fake news websites and phishing domains
+                <br>reported by our community and verified by our system.
+            </p>
+        </div>
+
+        <div class="directory-list">
+            <!--Search / filter bar-->
+            <div class="directory-controls">
+                <form method="GET" action="{{ url_for('directory.directory') }}" class="control-form">
+
+                    <input type="text"
+                        name="search"
+                        value="{{ request.args.get('search', '') }}"
+                        placeholder="Search for suspicious websites"
+                        class="search-input">
+
+                    <select id="category" name="category" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option value="Scam" {% if request.args.get('category') == 'Scam' %}selected{% endif %}>Scam & Phishing</option>
+                        <option value="News" {% if request.args.get('category') == 'News' %}selected{% endif %}>News & Media</option>
+                        <option value="Gambling" {% if request.args.get('category') == 'Gambling' %}selected{% endif %}>Gambling</option>
+                        <option value="Ecommerce" {% if request.args.get('category') == 'Ecommerce' %}selected{% endif %}>E-commerce</option>
+                        <option value="Social" {% if request.args.get('category') == 'Social' %}selected{% endif %}>Social Media</option>
+                        <option value="Government" {% if request.args.get('category') == 'Government' %}selected{% endif %}>Government Imitator</option>
+                        <option value="Malware" {% if request.args.get('category') == 'Malware' %}selected{% endif %}>Malware</option>
+                        <option value="Others" {% if request.args.get('category') == 'Others' %}selected{% endif %}>Others</option>
+                    </select>
+
+                    <button type="submit" class="filter-btn">Search</button>
+
+                </form>
+            </div>
+            
+            <div class="information-bar">
+                Showing {{ (page-1)*10 + 1 }} - {{ (page-1)*10 + directory_list|length }} of {{ total_items }} directories
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Website</th>
+                        <th>Category</th>
+                        <th>Risk Level</th>
+                        <th>Reported Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for directory in directory_list %}
+                    <!-- Main row -->
+                    <tr class="directory-row" data-id="{{ directory.directory_id }}">
+                        <td>
+                            <div class="website">
+                                <div class="logo-circle">
+                                    <i class="fas {{ category_icons.get(directory.category, 'fa-circle-question') }}"></i>
+                                </div>
+                                {{ directory.site_domain }}
+                            </div>
+                        </td>
+                        <td>{{ directory.category }}</td>
+                        <td>
+                            <span class="status {{ directory.risk_class }}">
+                                {{ directory.risk_level }}
+                            </span>
+                        </td>
+                        <td>{{ directory.date_reported }}</td>
+                    </tr>
+
+                    <!-- Accordion row -->
+                    <tr class="accordion-row" id="accordion-{{ directory.directory_id }}">
+                        <td colspan="4">
+                            <div class="accordion-content">
+                                <strong>Reason for listing:</strong><br>
+                                {{ directory.reason or "No detailed reason provided." }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">No directory found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+            <div class="pagination">
+                <div class="page-info">Showing page {{ page }} of {{ total_pages }}</div>
+
+                <div class="page-buttons">
+                    <a class="page-btn" href="{{ url_for('directory.directory', page=page-1) }}" {% if page == 1 %}style="pointer-events:none; opacity:0.5"{% endif %}>&lt;</a>
+
+                    {% set start = page - 1 if page > 1 else 1 %}
+                    {% set end = start + 2 %}
+                    {% if end > total_pages %}
+                        {% set end = total_pages %}
+                        {% set start = end - 2 if end - 2 > 0 else 1 %}
+                    {% endif %}
+
+                    {% for p in range(start, end + 1) %}
+                        <a class="page-btn {% if p == page %}active{% endif %}" href="{{ url_for('directory.directory', page=p) }}">{{ p }}</a>
+                    {% endfor %}
+
+                    <a class="page-btn" href="{{ url_for('directory.directory', page=page+1) }}" {% if page == total_pages %}style="pointer-events:none; opacity:0.5"{% endif %}>&gt;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Accordion script -->
+    <script>
+    document.querySelectorAll('.directory-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const id = row.dataset.id;
+            const accordion = document.getElementById(`accordion-${id}`);
+
+            if (accordion.style.display === 'table-row') {
+                accordion.style.display = 'none';
+            } else {
+                accordion.style.display = 'table-row';
+            }
+        });
+    });
+    </script>
+
+</body>
+</html>

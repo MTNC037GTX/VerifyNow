@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Learning</title>
+    <link rel="stylesheet" href="../static/css/style-learning.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+        
+        <nav class="nav-buttons">
+            <a href="/verification">Verification</a>
+            <a href="/learning" class="active">Learning</a>
+            <a href="/directory">Directory</a>
+            <a href="/statistics">Statistics</a>
+        </nav>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+
+    <!-- Main Content -->
+    <section class="article">
+        <div>
+            <h2>Learn to Identify Misinformation</h2>
+            <p class="b1">Educate yourself with our comprehensive resources on detecting fake news,<br>phishing attempts, and online disinformation.</p>
+        </div>
+
+        <div class="learn-grid">
+
+            {% for article in articles %}
+            <div class="learn-card">
+
+                <!-- Thumbnail -->
+                <img src="{{ url_for('static', filename='uploads/' ~ article.thumbnail_image) }}"
+                    alt="{{ article.title }}">
+
+                <div class="learn-content">
+
+                    <div class="learn-top">
+
+                        <!-- Category Tag -->
+                        <div class="tag 
+                            {% if article.category == 'Beginner Guide' %}blue
+                            {% elif article.category == 'Cybersecurity' %}green
+                            {% elif article.category == 'Infographic' %}purple
+                            {% else %}gray
+                            {% endif %}">
+                            {{ article.category }}
+                        </div>
+
+                        <!-- Title -->
+                        <h5>{{ article.title }}</h5>
+
+                        <!-- Description -->
+                        <p>{{ article.description }}</p>
+
+                    </div>
+
+                    <!-- Link to Article Page-->
+                    <a href="{{ url_for('learning.view_article', article_id=article.article_id) }}"
+                    class="learn-link">
+                        Read Article <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </section>
+
+</body>
+</html>

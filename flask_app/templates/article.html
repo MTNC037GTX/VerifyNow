@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Article</title>
+    <link rel="stylesheet" href="../static/css/style-article.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+        
+        <nav class="nav-buttons">
+            <a href="/verification">Verification</a>
+            <a href="/learning" class="active">Learning</a>
+            <a href="/directory">Directory</a>
+            <a href="/statistics">Statistics</a>
+        </nav>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+
+    <!-- Main Content -->
+    <section class="article-page">
+        <div class="article-header">
+            <a class="back-button" href="/learning"><i class="fa-solid fa-arrow-left"></i> Back</a>
+            <h1 class="article-title">{{ article.title }}</h1>
+        </div>
+
+        <div class="article-subtitle">
+            {{ article.description }}
+        </div>
+
+        <div class="article-body">
+            {{ article.content | safe }}
+        </div>
+    </section>
+
+</body>
+</html>

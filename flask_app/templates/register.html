@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    
+</head>
+<body>
+    <div class="login-container">
+        
+        <div class="login-card">
+            <div class="back-btn">
+                <a href="/auth/login" class="back-btn" ><i class="fa-solid fa-arrow-left"></i>Back</a>
+            </div>
+
+            <div class="login-header">
+                <div class="logo-circle">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>VerifyNow</h3>
+            </div>
+
+            <form class="login-form" method="POST" action="{{ url_for('auth.register') }}">
+                <label for="user_id">User ID</label>
+                <input type="text" id="user_id" name="user_id" placeholder="Please enter your user ID" required>
+
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password"
+                        placeholder="Please enter your password" required>
+                    <i class="fa-solid fa-eye toggle-password" data-target="password"></i>
+                </div>
+
+                <label for="cpassword">Confirm Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="cpassword" name="cpassword"
+                        placeholder="Please enter your password again" required>
+                    <i class="fa-solid fa-eye toggle-password" data-target="cpassword"></i>
+                </div>
+
+                <!-- ERROR MESSAGE -->
+                {% if error %}
+                <p class='b3'>{{ error }}</p>
+                {% endif %}
+
+                <button type="submit" class="login-btn2">Register</button>
+            </form>
+            <br>
+        </div>
+    </div>
+
+    <!-- Show/hide password 1-->
+    <script>
+    document.querySelectorAll(".toggle-password").forEach(icon => {
+        icon.addEventListener("click", () => {
+            const input = document.getElementById(icon.dataset.target);
+            const isPassword = input.type === "password";
+
+            input.type = isPassword ? "text" : "password";
+            icon.classList.toggle("fa-eye");
+            icon.classList.toggle("fa-eye-slash");
+        });
+    });
+    </script>
+
+    
+</body>
+</html>

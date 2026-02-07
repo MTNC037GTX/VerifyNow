@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Verification</title>
+    <link rel="stylesheet" href="../static/css/style-admin-verify.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+    <!-- Side navigation -->
+    <aside class="sidebar">
+
+        <a href="/admin-verification" class="active">
+            <i class="fa-solid fa-shield-alt"></i>
+            Verifications
+        </a>
+
+        <a href="/admin-learning">
+            <i class="fa-solid fa-book"></i>
+            Learning Content
+        </a>
+
+        <a href="/admin-directory">
+            <i class="fa-solid fa-globe"></i>
+            Fake Web Directory
+        </a>
+
+        <a href="/admin-statistics">
+            <i class="fa-solid fa-chart-bar"></i>
+            Statistics Management
+        </a>
+    </aside>
+
+
+    <!-- Main content -->
+    <section class="verification">
+        <div class="title">
+            <h3>Verifications</h3>
+        </div>
+
+        <div class="verify-form">
+            <div>
+                <h4>Verify with ML</h4>
+            </div>
+
+            <form method="GET" action="{{ url_for('verification.admin_verification') }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Content</label>
+                        <input
+                            type="url"
+                            id="website-url"
+                            name="ml_url"
+                            placeholder="Enter url to verify"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <button type="submit" class="verify-btn">
+                    Verify
+                </button>
+            </form>
+
+            {% if ml_result %}
+            <div class="verify-result">
+                <h5>Verification Result</h5>
+                <p><strong>Domain:</strong> {{ ml_result.domain }}</p>
+                <p><strong>Credibility Score:</strong> {{ ml_result.credibility_score }}</p>
+                <p><strong>Trustworthiness:</strong> {{ ml_result.trust }}%</p>
+                <p><strong>Label:</strong>
+                    <span class="{{ ml_result.label }}">
+                        {{ ml_result.label | upper }}
+                    </span>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+
+        <div class="verification-list">
+            <div class="information-bar">
+                Showing {{ (page-1)*10 + 1 }} - {{ (page-1)*10 + content_list|length }} of {{ total_items }} verifications
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Submitted Content / URL</th>
+                        <th>Date Verified</th>
+                        <th>Result</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for content in content_list %}
+                <tr>
+                    <td>{{ content.body_text[:100] }}{% if content.body_text|length > 100 %}...{% endif %}</td>
+                    <td>{{ content.verification_date or '' }}</td>
+                    <td>
+                        {% if content.result %}
+                            <span class="status {{ content.result_class }}">
+                                {{ content.result }}
+                            </span>
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+                    <td>{{ content.confidence_score or '-' }}</td>
+                    <td>
+                        <a href="#review-popup" 
+                            class="review-btn"
+                            data-id="{{ content.content_id }}"
+                            data-content="{{ content.body_text }}">
+                            Review
+                        </a>                    
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">No content found</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <div class="page-info">Showing page {{ page }} of {{ total_pages }}</div>
+
+                <div class="page-buttons">
+                    <a class="page-btn" href="{{ url_for('verification.admin_verification', page=page-1) }}" {% if page == 1 %}style="pointer-events:none; opacity:0.5"{% endif %}>&lt;</a>
+
+                    {% set start = page - 1 if page > 1 else 1 %}
+                    {% set end = start + 2 %}
+                    {% if end > total_pages %}
+                        {% set end = total_pages %}
+                        {% set start = end - 2 if end - 2 > 0 else 1 %}
+                    {% endif %}
+
+                    {% for p in range(start, end + 1) %}
+                        <a class="page-btn {% if p == page %}active{% endif %}" href="{{ url_for('verification.admin_verification', page=p) }}">{{ p }}</a>
+                    {% endfor %}
+
+                    <a class="page-btn" href="{{ url_for('verification.admin_verification', page=page+1) }}" {% if page == total_pages %}style="pointer-events:none; opacity:0.5"{% endif %}>&gt;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Popup -->
+    <div id="review-popup" class="popup-overlay">
+        <div class="popup-box review-box">
+
+            <!-- Header -->
+            <div class="popup-header">
+                <h5>Review Submission</h5>
+                <a href="/admin-verification" class="popup-close-btn">&times;</a>
+            </div>
+
+            
+            <form id="review-form" method="POST">
+                <div class="popup-body">
+
+                    <label>Submitted Content</label>
+                    <textarea class="popup-textarea" readonly></textarea>
+
+                    <label for="result">Result</label>
+                    <select id="result" name="result" class="popup-input" required>
+                        <option value="Legit">Legit</option>
+                        <option value="Fake">Fake</option>
+                        <option value="Suspicious">Suspicious</option>
+                    </select>
+
+                    <label for="confidence">Confidence Score</label>
+                    <input id="confidence" name="confidence_score" type="number" class="popup-input" placeholder="0 - 100" min="0" max="100" required>
+                    <label for="remarks">Remarks</label>
+                    <textarea id="remarks" name="remarks" class="popup-remarks" placeholder="Additional notes..."></textarea>
+                </div>
+
+                <!-- Footer buttons -->
+                <div class="popup-footer">
+                    <a href="/admin-verification" class="btn-cancel">Cancel</a>
+                    <button type="submit" class="btn-confirm">Confirm</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+   
+    <script>
+    // Populate popup with content data
+    document.addEventListener("DOMContentLoaded", function() {
+        const reviewButtons = document.querySelectorAll('.review-btn');
+        const popupTextarea = document.querySelector('.popup-textarea');
+
+        reviewButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const content = this.dataset.content;
+                popupTextarea.value = content;
+            });
+        });
+    });
+
+    // Open review popup and set form action
+    document.querySelectorAll('.review-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelector('#review-form').action = `/admin-verify/${btn.dataset.id}`;
+            document.querySelector('.popup-textarea').value = btn.dataset.content;
+            document.getElementById('review-popup').classList.add('active');
+        });
+    });
+
+    </script>
+
+    
+
+
+</body>
+</html>

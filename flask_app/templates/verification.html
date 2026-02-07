@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verification</title>
+    <link rel="stylesheet" href="../static/css/style-verify.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!--for icons-->
+    
+</head>
+<body>
+<!-- Header -->
+    <header class="header1">
+        <div class="left-section">
+            <div class="logo-box">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="app-name">VerifyNow</span>
+        </div>
+        
+        <nav class="nav-buttons">
+            <a href="/verification" class="active">Verification</a>
+            <a href="/learning">Learning</a>
+            <a href="/directory">Directory</a>
+            <a href="/statistics">Statistics</a>
+        </nav>
+
+        <div class="right-section">
+            <span class="welcome-text">Welcome, {{ session['user_id'] }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Log out
+            </a>
+        </div>
+    </header>
+
+    
+    <!-- Main Content -->
+    <section class="content-verification">
+        <div>
+            <h2>Verify Content Authenticity</h2>
+            <p class="b1">Check news articles, websites, and social media content for <br>misinformation, fake news, and phishing attempts.</p>
+        </div>
+
+        <div class="cv-card">
+            <!-- Tabs -->
+            <input type="radio" name="cv-tab" id="tab-text"
+                {% if active_tab != "url" %}checked{% endif %}>
+
+            <input type="radio" name="cv-tab" id="tab-url"
+                {% if active_tab == "url" %}checked{% endif %}>
+
+            <div class="cv-tabs">
+                <label for="tab-text" class="tab"><i class="fa-solid fa-t"></i> Text Input</label>
+                <label for="tab-url" class="tab"><i class="fas fa-link"></i> URL Check</label>
+            </div>
+
+            <!-- TEXT FORM -->
+            <div class="cv-section text-section">
+                <form action="{{ url_for('verification.submit_content') }}" method="POST">
+                    <textarea name="body_text" placeholder="Paste the text you want to verify here..." rows="8" required></textarea>
+
+                    <div class="cv-actions">
+                        <div class="b3"><i class="fas fa-info-circle"></i> &nbsp;All checks are processed by the administrator</div>
+                        <button type="submit" class="cv-submit-btn"><i class="fas fa-search"></i> Check Authenticity</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- URL FORM -->
+            <div class="cv-section url-section">
+                <form action="{{ url_for('verification.submit_content') }}" method="POST">
+                    <div class="cv-url-wrapper">
+                        <span class="cv-url-icon"><i class="fas fa-link"></i></span>
+                        <input type="url" name="body_text" placeholder="https://example.com/article" required>
+                    </div>
+
+                    <div class="cv-actions">
+                        <div class="b3"><i class="fas fa-info-circle"></i> &nbsp;All checks are processed by the administrator</div>
+                        <button type="submit" class="cv-submit-btn"><i class="fas fa-search"></i> Analyze URL</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+    </section>
+
+
+    <br><br><br>
+
+    <section class="past-verifications">
+        <h4><i class="fas fa-history"></i> Past Verifications</h4>
+
+        <div class="pv-list">
+            <div class="information-bar">
+                Showing {{ (page-1)*10 + 1 }}
+                -
+                {{ (page-1)*10 + results|length if results|length > 0 else (page-1)*10 }}
+                of {{ total_items }} verifications
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Submitted Content / URL</th>
+                        <th>Date</th>
+                        <th>Result</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for content in results %}
+                    <tr>
+                        <td>{{ content.body_text[:80] }}{% if content.body_text|length > 80 %}...{% endif %}</td>
+                        <td>{{ content.date or '' }}</td>
+                        <td>
+                            {% if content.result %}
+                                <span class="status {{ content.result_class }}">
+                                    {{ content.result }}
+                                </span>
+                            {% else %}
+                                Pending
+                            {% endif %}
+                        </td>
+                        <td>{{ content.confidence_score or '-' }}</td>
+                        <td>
+                            <a href="?content_id={{ content.content_id }}#detailsPopup" class="details-btn">Details</a>
+                        </td>
+
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No content found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Popup -->
+            {% if selected_item %}
+            <div id="detailsPopup" class="popup-overlay active">
+            {% else %}
+            <div id="detailsPopup" class="popup-overlay">
+            {% endif %}
+                <div class="popup-box">
+
+                    <div class="icon-box" style="background: {{ selected_item.icon_bg }};">
+                        <i class="{{ selected_item.icon_class }}" style="color: {{ selected_item.icon_color }};"></i>
+                    </div>
+
+                    <h3>Verification Details</h3>
+
+                    <p class="popup-content">
+                        {{ selected_item.remarks if selected_item else "No data available." }}
+                    </p>
+
+                    <a href="#" class="popup-close">OK</a>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="page-info">Showing page {{ page }} of {{ total_pages }}</div>
+
+                <div class="page-buttons">
+                    <a class="page-btn" href="{{ url_for('verification.verification', page=page-1) }}" {% if page == 1 %}style="pointer-events:none; opacity:0.5"{% endif %}>&lt;</a>
+
+                    {% set start = page - 1 if page > 1 else 1 %}
+                    {% set end = start + 2 %}
+                    {% if end > total_pages %}
+                        {% set end = total_pages %}
+                        {% set start = end - 2 if end - 2 > 0 else 1 %}
+                    {% endif %}
+
+                    {% for p in range(start, end + 1) %}
+                        <a class="page-btn {% if p == page %}active{% endif %}" href="{{ url_for('verification.verification', page=p) }}">{{ p }}</a>
+                    {% endfor %}
+
+                    <a class="page-btn" href="{{ url_for('verification.verification', page=page+1) }}" {% if page == total_pages %}style="pointer-events:none; opacity:0.5"{% endif %}>&gt;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toast notification script -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const flash_messages = document.querySelectorAll(".flash-message");
+        flash_messages.forEach(toast => {
+            setTimeout(() => {
+                toast.style.opacity = "0";  // <-- use toast, not flash_messages
+                setTimeout(() => {
+                    toast.remove();          // <-- remove this single message
+                }, 500);
+            }, 3000); // wait 3 seconds before fading
+        });
+    });
+    </script>
+
+
+</body>
+</html>
