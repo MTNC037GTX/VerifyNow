@@ -88,19 +88,6 @@ ML/
 * source_reliability
 * top_reported_domains
 
-## INSTALLATION AND SETUP
-
-1. Clone the repository
-2. Create a Python virtual environment
-3. Install required dependencies
-4. Configure database connection
-5. Run Flask application
-
-## Example commands
-
-python -m venv venv
-pip install -r requirements.txt
-flask run
 
 ## USAGE FLOW
 
